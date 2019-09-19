@@ -246,8 +246,6 @@ func Rules(tokens *list.List) []Rule {
 		tok := e.Value.(TokenEntry)
 
 		switch tok.typ() {
-		case tokenSelector:
-			selector = "."
 		case tokenValue:
 			switch prevToken {
 			case tokenBlockEnd, tokenFirstToken, tokenValue:
@@ -255,8 +253,11 @@ func Rules(tokens *list.List) []Rule {
 			case tokenSelector:
 				rule = append(rule, selector+tok.value)
 			}
+		case tokenSelector:
+			selector = "."
 		case tokenBlockStart:
 			rules = append(rules, Rule(strings.Join(rule, " ")))
+			rule = []string{}
 		}
 
 		prevToken = tok.typ()

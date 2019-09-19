@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"regexp"
 	"strings"
 	"text/scanner"
 )
@@ -21,6 +22,10 @@ const (
 	tokenSelector
 	tokenStyleSeparator
 	tokenStatementEnd
+)
+
+var (
+	rComments = regexp.MustCompile(`\/\*[^*]*\*+([^/*][^*]*\*+)*\/`)
 )
 
 // Rule is a string type that represents a CSS rule.
@@ -265,4 +270,25 @@ func Rules(tokens *list.List) []Rule {
 	}
 
 	return rules
+}
+
+// Comments returns all css comments
+func Comments(b []byte) []string {
+	return rComments.FindAllString(string(b), -1)
+}
+
+// BlockCount returns the number code blocks in the css
+func BlockCount(tokens *list.List) int {
+	count := 0
+
+	e := tokens.Front()
+	for e != nil {
+		tok := e.Value.(TokenEntry)
+		if tok.typ() == tokenBlockStart {
+			count++
+		}
+		e = e.Next()
+	}
+
+	return count
 }

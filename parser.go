@@ -231,3 +231,18 @@ func CSSStyle(name string, styles map[string]string) (Style, error) {
 func Tokenize(b []byte) *list.List {
 	return buildList(bytes.NewReader(b))
 }
+
+// Selectors will return all the selector tokens, including duplicants.
+func Selectors(tokens *list.List) []string {
+	selectors := []string{}
+
+	e := tokens.Front()
+	for e != nil {
+		tok := e.Value.(tokenEntry)
+		if tok.typ() == tokenSelector {
+			selectors = append(selectors, tok.value)
+		}
+		e = e.Next()
+	}
+	return selectors
+}

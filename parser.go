@@ -25,7 +25,8 @@ const (
 )
 
 var (
-	rComments = regexp.MustCompile(`\/\*[^*]*\*+([^/*][^*]*\*+)*\/`)
+	rComments = regexp.MustCompile(`\/\*[^*]*\*+([^\/*][^*]*\*+)*\/`)
+	rLicenses = regexp.MustCompile(`\/\*![^*]*\*+([^\/*][^*]*\*+)*\/`)
 )
 
 // Rule is a string type that represents a CSS rule.
@@ -277,6 +278,12 @@ func Comments(b []byte) []string {
 	return rComments.FindAllString(string(b), -1)
 }
 
+// Licenses returns all css License. Will return empty string if no
+// license exists .
+func Licenses(b []byte) []string {
+	return rLicenses.FindAllString(string(b), -1)
+}
+
 // BlockCount returns the number code blocks in the css
 func BlockCount(tokens *list.List) int {
 	count := 0
@@ -293,7 +300,7 @@ func BlockCount(tokens *list.List) int {
 	return count
 }
 
-// Names returns all class,id and element identifiers including
+// Names returns all class, id and element identifiers including
 // duplicants
 func Names(tokens *list.List) []string {
 	var (

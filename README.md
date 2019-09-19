@@ -4,13 +4,18 @@
 
 ---
 
-This parser understands simple CSS and comes with a basic CSS syntax checker.
+This parser understands simple CSS and comes with a basic CSS syntax checker. 
+Does not currently support the following features:
+- Media Queries
+- Comma seperated selectors
+
+## Installation
 
 ```
 go get github.com/itskass/go-css
 ```
 
-Example usage:
+## Example usage:
 
 ```go
 
@@ -47,6 +52,6 @@ if err != nil {
 Most of the CSS properties are currently not implemented, but you can always write your own handler by writing a ``StyleHandler`` function and adding it to the ``StylesTable`` map.
 
 ---
- # Forked 
+ # (Forked )
 
- This was forked from napsy because I needed to some extra functionality like the ability to return all tokens amoung others. 
+ This was forked from napsy because I required extra functionality like the ability to return all tokens amoung others.

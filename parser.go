@@ -143,6 +143,7 @@ func parse(l *list.List) (map[Rule]map[string]string, error) {
 	var (
 		// Information about the current block that is parsed.
 		rule     []string
+		blocks   []map[string]string
 		style    string
 		value    string
 		selector string
@@ -194,25 +195,30 @@ func parse(l *list.List) (map[Rule]map[string]string, error) {
 			if !isBlock {
 				return css, fmt.Errorf("line %d: rule block ends without a beginning", token.pos.Line)
 			}
-			for i := range rule {
-				oldRule, ok := css[Rule(rule[i])]
-				if ok {
-					// merge rules
-					for style, value := range oldRule {
-						if _, ok := styles[style]; !ok {
-							styles[style] = value
-						}
-					}
-				}
-				css[Rule(rule[i])] = styles
 
-			}
+			blocks = append(blocks, styles)
 			styles = map[string]string{}
 			style, value = "", ""
 			isBlock = false
 		}
 		prevToken = token.typ()
 	}
+
+	for i := range rule {
+		styles = blocks[i]
+		oldRule, ok := css[Rule(rule[i])]
+		if ok {
+			// merge rules
+			for style, value := range oldRule {
+				if _, ok := styles[style]; !ok {
+					styles[style] = value
+				}
+			}
+		}
+		//fmt.Println(rule[i], "merging:", ok, styles)
+		css[Rule(rule[i])] = styles
+	}
+
 	return css, nil
 }
 
@@ -270,6 +276,17 @@ func Selectors(tokens *list.List) []Rule {
 		e = e.Next()
 	}
 
+	return rules
+}
+
+// Rules will return all the rules in a style map
+func Rules(styles map[Rule]map[string]string) []string {
+	rules := []string{}
+	for _, block := range styles {
+		for k, v := range block {
+			rules = append(rules, k+": "+v)
+		}
+	}
 	return rules
 }
 

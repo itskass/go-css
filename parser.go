@@ -26,7 +26,7 @@ const (
 // Rule is a string type that represents a CSS rule.
 type Rule string
 
-type tokenEntry struct {
+type TokenEntry struct {
 	value string
 	pos   scanner.Position
 }
@@ -46,14 +46,14 @@ func (rule Rule) Type() string {
 	return "tag"
 }
 
-func (e tokenEntry) typ() tokenType {
+func (e TokenEntry) typ() tokenType {
 	return newTokenType(e.value)
 }
 
-func (t *tokenizer) next() (tokenEntry, error) {
+func (t *tokenizer) next() (TokenEntry, error) {
 	token := t.s.Scan()
 	if token == scanner.EOF {
-		return tokenEntry{}, errors.New("EOF")
+		return TokenEntry{}, errors.New("EOF")
 	}
 	value := t.s.TokenText()
 	pos := t.s.Pos()
@@ -72,7 +72,7 @@ func (t *tokenizer) next() (tokenEntry, error) {
 			return true
 		}
 	}
-	return tokenEntry{
+	return TokenEntry{
 		value: value,
 		pos:   pos,
 	}, nil
@@ -152,7 +152,7 @@ func parse(l *list.List) (map[Rule]map[string]string, error) {
 	)
 
 	for e := l.Front(); e != nil; e = l.Front() {
-		token := e.Value.(tokenEntry)
+		token := e.Value.(TokenEntry)
 		l.Remove(e)
 		switch token.typ() {
 		case tokenValue:
@@ -232,17 +232,36 @@ func Tokenize(b []byte) *list.List {
 	return buildList(bytes.NewReader(b))
 }
 
-// Selectors will return all the selector tokens, including duplicants.
-func Selectors(tokens *list.List) []string {
-	selectors := []string{}
+// Rules will return all the rules, including duplicated rules.
+func Rules(tokens *list.List) []Rule {
+	var (
+		selector  = ""
+		rule      = []string{}
+		rules     = []Rule{}
+		prevToken = tokenType(tokenFirstToken)
+	)
 
 	e := tokens.Front()
 	for e != nil {
-		tok := e.Value.(tokenEntry)
-		if tok.typ() == tokenSelector {
-			selectors = append(selectors, tok.value)
+		tok := e.Value.(TokenEntry)
+
+		switch tok.typ() {
+		case tokenSelector:
+			selector = "."
+		case tokenValue:
+			switch prevToken {
+			case tokenBlockEnd, tokenFirstToken, tokenValue:
+				rule = append(rule, tok.value)
+			case tokenSelector:
+				rule = append(rule, selector+tok.value)
+			}
+		case tokenBlockStart:
+			rules = append(rules, Rule(strings.Join(rule, " ")))
 		}
+
+		prevToken = tok.typ()
 		e = e.Next()
 	}
-	return selectors
+
+	return rules
 }

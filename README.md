@@ -1,23 +1,20 @@
 # go-css
+**Important! This was originally forked from napsy.**<br>*(Reason at the bottom)*.
+*[Original Repo](https://github.com/napsy/go-css)*.
 
-[![Build Status](https://travis-ci.org/napsy/go-css.svg?branch=master)](https://travis-ci.org/napsy/go-css)
-[![Software License](https://img.shields.io/badge/License-MIT-orange.svg?style=flat-square)](https://github.com/vendor/package/blob/master/LICENSE.md)
-[![GoDoc](https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square)](https://godoc.org/github.com/napsy/go-css)
-
-
+---
 
 This parser understands simple CSS and comes with a basic CSS syntax checker.
 
-
 ```
-go get github.com/napsy/go-css
+go get github.com/itskass/go-css
 ```
 
 Example usage:
 
 ```go
 
-import "github.com/napsy/go-css"
+import "github.com/itskass/go-css"
 
 ex1 := `rule {
 	style1: value1;
@@ -48,3 +45,8 @@ if err != nil {
 ```
 
 Most of the CSS properties are currently not implemented, but you can always write your own handler by writing a ``StyleHandler`` function and adding it to the ``StylesTable`` map.
+
+---
+ # Forked 
+
+ This was forked from napsy because I needed to some extra functionality like the ability to return all tokens amoung others. 

@@ -279,17 +279,6 @@ func Selectors(tokens *list.List) []Rule {
 	return rules
 }
 
-// Rules will return all the rules in a style map
-func Rules(styles map[Rule]map[string]string) []string {
-	rules := []string{}
-	for _, block := range styles {
-		for k, v := range block {
-			rules = append(rules, k+": "+v)
-		}
-	}
-	return rules
-}
-
 // Comments returns all css comments
 func Comments(b []byte) []string {
 	return rComments.FindAllString(string(b), -1)
@@ -341,4 +330,15 @@ func Identifiers(tokens *list.List) []string {
 	}
 
 	return names
+}
+
+// Styles will return all the styles in a css as an arrays
+func Styles(css map[Rule]map[string]string) []string {
+	styles := []string{}
+	for _, block := range css {
+		for k, v := range block {
+			styles = append(styles, k+": "+v)
+		}
+	}
+	return styles
 }

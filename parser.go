@@ -292,3 +292,29 @@ func BlockCount(tokens *list.List) int {
 
 	return count
 }
+
+// Names returns all class,id and element identifiers including
+// duplicants
+func Names(tokens *list.List) []string {
+	var (
+		names = []string{}
+		prev  = TokenEntry{}
+	)
+
+	e := tokens.Front()
+	for e != nil {
+		tok := e.Value.(TokenEntry)
+
+		if prev.typ() == tokenSelector {
+			names = append(names, prev.value+tok.value)
+		} else if prev.typ() == tokenBlockEnd &&
+			tok.typ() != tokenSelector {
+			names = append(names, tok.value)
+		}
+
+		prev = tok
+		e = e.Next()
+	}
+
+	return names
+}

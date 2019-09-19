@@ -238,8 +238,8 @@ func Tokenize(b []byte) *list.List {
 	return buildList(bytes.NewReader(b))
 }
 
-// Rules will return all the rules, including duplicated rules.
-func Rules(tokens *list.List) []Rule {
+// Selectors will return all the selectors, including duplicants.
+func Selectors(tokens *list.List) []Rule {
 	var (
 		selector  = ""
 		rule      = []string{}
@@ -300,9 +300,9 @@ func BlockCount(tokens *list.List) int {
 	return count
 }
 
-// Names returns all class, id and element identifiers including
+// Identifiers returns all class, id and element identifiers including
 // duplicants
-func Names(tokens *list.List) []string {
+func Identifiers(tokens *list.List) []string {
 	var (
 		names = []string{}
 		prev  = TokenEntry{}

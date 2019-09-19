@@ -213,7 +213,7 @@ func parse(l *list.List) (map[Rule]map[string]string, error) {
 // Unmarshal will take a byte slice, containing sylesheet rules and return
 // a map of a rules map.
 func Unmarshal(b []byte) (map[Rule]map[string]string, error) {
-	return parse(buildList(bytes.NewReader(b)))
+	return parse(Tokenize(b))
 }
 
 // CSSStyle returns an error-checked parsed style, or an error if the
@@ -225,4 +225,9 @@ func CSSStyle(name string, styles map[string]string) (Style, error) {
 		return Style{}, errors.New("unknown style")
 	}
 	return styleFn(value)
+}
+
+// Tokenize builds a token list from css bytes
+func Tokenize(b []byte) *list.List {
+	return buildList(bytes.NewReader(b))
 }

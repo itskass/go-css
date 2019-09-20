@@ -154,18 +154,21 @@ func Parse(l *list.List) (map[Rule]map[string]string, error) {
 
 		switch tok.typ() {
 		case tokenSelector:
-			bufferK += tok.value
+			bufferV += tok.value
 		case tokenStyleSeparator:
 			bufferV = ""
 			bufferK += prev.value
 		case tokenValue:
+			if prev.typ() == tokenValue {
+				bufferV += " "
+			}
 			bufferV += tok.value
 		case tokenStatementEnd:
 			styles[bufferK] = bufferV
 			bufferK = ""
 			bufferV = ""
 		case tokenBlockStart:
-			selectors = append(selectors, bufferK+bufferV)
+			selectors = append(selectors, bufferV)
 			bufferK = ""
 			bufferV = ""
 		case tokenBlockEnd:

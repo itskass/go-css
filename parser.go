@@ -146,6 +146,7 @@ func Parse(l *list.List) (map[Rule]map[string]string, error) {
 		e       = l.Front()
 		bufferV = ""
 		bufferK = ""
+		inblock = false
 	)
 
 	for e != nil {
@@ -156,9 +157,15 @@ func Parse(l *list.List) (map[Rule]map[string]string, error) {
 		case tokenSelector:
 			bufferV += tok.value
 		case tokenStyleSeparator:
-			bufferV = ""
-			bufferK += prev.value
+			if inblock {
+				bufferV = ""
+				bufferK += prev.value
+				break
+			}
+			bufferV += tok.value
 		case tokenValue:
+			// this is a work around for supporting media queries
+			tok.value = strings.Replace(tok.value, "{", "", -1)
 			if prev.typ() == tokenValue {
 				bufferV += " "
 			}
@@ -168,10 +175,12 @@ func Parse(l *list.List) (map[Rule]map[string]string, error) {
 			bufferK = ""
 			bufferV = ""
 		case tokenBlockStart:
+			inblock = true
 			selectors = append(selectors, bufferV)
 			bufferK = ""
 			bufferV = ""
 		case tokenBlockEnd:
+			inblock = false
 			if prev.typ() != tokenStatementEnd && prev.typ() != tokenBlockStart {
 				styles[bufferK] = bufferV
 			}

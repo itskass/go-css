@@ -7,7 +7,7 @@
 This parser understands simple CSS and comes with a basic CSS syntax checker. 
 Does not currently support the following features:
 - Media Queries
-- Comma seperated selectors
+- ~~Comma seperated selectors~~ *partially supported*
 
 ## Installation
 

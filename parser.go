@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"container/list"
 	"errors"
-	"fmt"
 	"io"
 	"regexp"
 	"strings"
@@ -137,76 +136,56 @@ func buildList(r io.Reader) *list.List {
 	return l
 }
 
-// TODO: rules can be comma separated
-func parse(l *list.List) (map[Rule]map[string]string, error) {
-
+func Parse(l *list.List) (map[Rule]map[string]string, error) {
 	var (
-		// Information about the current block that is parsed.
-		rule     []string
-		blocks   []map[string]string
-		style    string
-		value    string
-		selector string
+		styles    = map[string]string{}
+		selectors = []string{}
+		blocks    = []map[string]string{}
 
-		isBlock bool
-
-		// Parsed styles.
-		css    = make(map[Rule]map[string]string)
-		styles = make(map[string]string)
-
-		// Previous token for the state machine.
-		prevToken = tokenType(tokenFirstToken)
+		prev    = TokenEntry{}
+		e       = l.Front()
+		bufferV = ""
+		bufferK = ""
 	)
 
-	for e := l.Front(); e != nil; e = l.Front() {
-		token := e.Value.(TokenEntry)
-		l.Remove(e)
-		switch token.typ() {
-		case tokenValue:
-			//fmt.Printf("typ: %v, value: %q, prevToken: %v\n", token.typ(), token.value, prevToken)
-			switch prevToken {
-			case tokenFirstToken, tokenBlockEnd:
-				rule = append(rule, token.value)
-			case tokenSelector:
-				rule = append(rule, selector+token.value)
-			case tokenBlockStart, tokenStatementEnd:
-				style = token.value
-			case tokenStyleSeparator:
-				value = token.value
-			case tokenValue:
-				rule = append(rule, token.value)
-			default:
-				return css, fmt.Errorf("line %d: invalid syntax", token.pos.Line)
-			}
-		case tokenSelector:
-			selector = token.value
-		case tokenBlockStart:
-			if prevToken != tokenValue {
-				return css, fmt.Errorf("line %d: block is missing rule identifier", token.pos.Line)
-			}
-			isBlock = true
-		case tokenStatementEnd:
-			//fmt.Printf("prevToken: %v, style: %v, value: %v\n", prevToken, style, value)
-			if prevToken != tokenValue || style == "" || value == "" {
-				return css, fmt.Errorf("line %d: expected style before semicolon", token.pos.Line)
-			}
-			styles[style] = value
-		case tokenBlockEnd:
-			if !isBlock {
-				return css, fmt.Errorf("line %d: rule block ends without a beginning", token.pos.Line)
-			}
+	for e != nil {
+		tok := e.Value.(TokenEntry)
+		//fmt.Printf("{\n token: %v %s\n bK: %s\n bV: %s\n}", tok.typ(), tok.value, bufferK, bufferV)
 
+		switch tok.typ() {
+		case tokenSelector:
+			bufferK += tok.value
+		case tokenStyleSeparator:
+			bufferV = ""
+			bufferK += prev.value
+		case tokenValue:
+			bufferV += tok.value
+		case tokenStatementEnd:
+			styles[bufferK] = bufferV
+			bufferK = ""
+			bufferV = ""
+		case tokenBlockStart:
+			selectors = append(selectors, bufferK+bufferV)
+			bufferK = ""
+			bufferV = ""
+		case tokenBlockEnd:
+			if prev.typ() != tokenStatementEnd && prev.typ() != tokenBlockStart {
+				styles[bufferK] = bufferV
+			}
+			bufferK = ""
+			bufferV = ""
 			blocks = append(blocks, styles)
 			styles = map[string]string{}
-			style, value = "", ""
-			isBlock = false
 		}
-		prevToken = token.typ()
+		prev = tok
+		e = e.Next()
 	}
 
-	for i := range rule {
+	// compile blocks and merge duplicates
+	css := make(map[Rule]map[string]string)
+	for i := range selectors {
 		styles = blocks[i]
-		oldRule, ok := css[Rule(rule[i])]
+		oldRule, ok := css[Rule(selectors[i])]
 		if ok {
 			// merge rules
 			for style, value := range oldRule {
@@ -216,7 +195,7 @@ func parse(l *list.List) (map[Rule]map[string]string, error) {
 			}
 		}
 		//fmt.Println(rule[i], "merging:", ok, styles)
-		css[Rule(rule[i])] = styles
+		css[Rule(selectors[i])] = styles
 	}
 
 	return css, nil
@@ -225,7 +204,7 @@ func parse(l *list.List) (map[Rule]map[string]string, error) {
 // Unmarshal will take a byte slice, containing sylesheet rules and return
 // a map of a rules map.
 func Unmarshal(b []byte) (map[Rule]map[string]string, error) {
-	return parse(Tokenize(b))
+	return Parse(Tokenize(b))
 }
 
 // CSSStyle returns an error-checked parsed style, or an error if the

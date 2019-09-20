@@ -1,5 +1,5 @@
 # go-css
-**Important! This was originally forked from napsy.**<br>*(Reason at the bottom)*.
+**Important! This was originally forked from napsy.**<br>
 *[Original Repo](https://github.com/napsy/go-css)*.
 
 ---
@@ -52,6 +52,6 @@ if err != nil {
 Most of the CSS properties are currently not implemented, but you can always write your own handler by writing a ``StyleHandler`` function and adding it to the ``StylesTable`` map.
 
 ---
- # (Forked )
+# (Forked)
 
- This was forked from napsy because I required extra functionality like the ability to return all tokens amoung others.
+This was forked from napsy because I required extra functionality like the ability to return all tokens amoung others.
